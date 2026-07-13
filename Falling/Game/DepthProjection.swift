@@ -12,7 +12,7 @@ enum DepthProjection {
         let depthToPlayer: CGFloat
     }
 
-    /// Projects the player so their feet remain at the fixed lower-middle anchor.
+    /// Projects the player so their feet remain at the fixed bottom-screen anchor.
     static func projectPlayer(
         worldCenter: CGPoint,
         worldSize: CGSize,

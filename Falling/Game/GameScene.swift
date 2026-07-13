@@ -70,24 +70,40 @@ final class GameScene: SKScene {
 
         guard let startPlatform = platforms.first else { return }
 
-        playerPosition = spawnPosition(on: startPlatform)
+        // Fall into the shaft so each ledge's depth-to-player animates independently
+        // while the feet stay locked to the bottom screen anchor (ARCHITECTURE.md §8.4).
+        playerPosition = CGPoint(
+            x: startPlatform.center.x,
+            y: startPlatform.topSurfaceY + WorldConstants.playerSize.height * 0.5 + 420
+        )
         playerVelocity = .zero
-        playerState = .grounded
-        groundedPlatformID = startPlatform.id
+        playerState = .falling
+        groundedPlatformID = nil
         didPlaceInitialLayout = true
         updatePresentation()
     }
 
     private func makeStaticPlatforms() -> [Platform] {
+        let shaftCenterX = WorldConstants.referenceWidth * 0.5
         let startCenter = CGPoint(
-            x: size.width * 0.5,
-            y: WorldConstants.platformBottomOffset + WorldConstants.platformSize.height * 0.5
+            x: shaftCenterX,
+            y: WorldConstants.platformBottomOffset + WorldConstants.startPlatformSize.height * 0.5
         )
 
-        return [
-            Platform(center: startCenter, size: WorldConstants.platformSize),
-            Platform(center: WorldConstants.secondPlatformCenter, size: WorldConstants.secondPlatformSize),
+        var platforms = [
+            Platform(center: startCenter, size: WorldConstants.startPlatformSize)
         ]
+
+        for ledge in WorldConstants.depthFieldLedges {
+            platforms.append(
+                Platform(
+                    center: CGPoint(x: shaftCenterX + ledge.lateral, y: startCenter.y - ledge.depth),
+                    size: ledge.size
+                )
+            )
+        }
+
+        return platforms
     }
 
     private func syncPlatformNodes() {
@@ -98,12 +114,14 @@ final class GameScene: SKScene {
             platformNodes.removeValue(forKey: id)
         }
 
-        for platform in platforms {
+        for (index, platform) in platforms.enumerated() {
             let node: SKSpriteNode
             if let existing = platformNodes[platform.id] {
                 node = existing
             } else {
-                let created = SKSpriteNode(color: SKColor(white: 0.55, alpha: 1), size: platform.size)
+                // Placeholder shades so overlapping ledges stay readable in the depth field.
+                let shade = 0.42 + CGFloat(index % 5) * 0.06
+                let created = SKSpriteNode(color: SKColor(white: shade, alpha: 1), size: platform.size)
                 created.anchorPoint = CGPoint(x: 0.5, y: 0.5)
                 created.zPosition = 0
                 addChild(created)
