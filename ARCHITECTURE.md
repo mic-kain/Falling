@@ -51,10 +51,12 @@ Reference gameplay width is 390 logical world units. The runtime maps this fixed
 
 World depth and world lateral offset remain the only inputs to physics and procedural generation, exactly as specified in section 8.2 and in GAMEPLAY_RULES.md. This subsection covers presentation only.
 
-The renderer maps each platform's remaining depth-to-player into a screen scale and vertical screen position, small and near a fixed vanishing point when far, growing toward the player anchor as it approaches.
+The vanishing point is a fixed point at the center of the screen, not at the top. The player's feet and lower body render near a fixed anchor at the bottom of the screen, standing on the nearest ledge, which renders large and spans most of the screen width. This sells a first-person look-down viewpoint of the player falling into the screen.
 
-The renderer maps a platform's lateral world offset into a horizontal screen offset scaled by that same projection factor, so gaps continue to read as left or right of center as they close in.
+Each upcoming ledge spawns small at the center vanishing point and grows in scale while moving downward from center toward the bottom player anchor as its depth-to-player decreases. Ledges never move upward or outward from the edges; all motion is outward-and-downward from center toward the bottom anchor.
 
-The player's feet and lower body render near a fixed screen anchor to sell a first-person look-down viewpoint. A looping cavern-wall texture renders around the vanishing point and scrolls outward with depth to reinforce an endless-shaft feeling.
+The renderer maps a platform's lateral world offset into a horizontal screen offset scaled by the same projection factor used for scale, so gaps continue to read as left or right of center as they close in, while the platform still moves downward toward the bottom anchor.
+
+A looping cavern-wall texture renders around the center vanishing point and scrolls outward and downward with depth to reinforce an endless-shaft feeling of falling into the screen.
 
 This projection is cosmetic only. Gameplay, collision and difficulty scaling continue to operate entirely in world units and never read screen-space values.
