@@ -1,8 +1,9 @@
 import CoreGraphics
+import Foundation
 
 /// Swept top-surface landing collision (ARCHITECTURE.md §8).
 enum SweptCollision {
-    struct LandingResult: Equatable {
+    struct LandingResult {
         let platformID: UUID
         let position: CGPoint
     }
