@@ -3,6 +3,7 @@ import SpriteKit
 /// Gameplay scene: static platforms, swept landing, grounded behaviour, two-zone jumps.
 final class GameScene: SKScene {
     private var simulator: FixedTimestepSimulator?
+    private var isSimulationRunning = false
     private var playerNode: SKSpriteNode?
     private var platformNodes: [UUID: SKSpriteNode] = [:]
 
@@ -21,17 +22,19 @@ final class GameScene: SKScene {
 
         ensureNodesExist()
         placeInitialLayoutIfNeeded()
-        startSimulation()
+        startSimulationIfReady()
     }
 
     override func willMove(from view: SKView) {
         simulator?.stop()
         simulator = nil
+        isSimulationRunning = false
     }
 
     override func didChangeSize(_ oldSize: CGSize) {
         ensureNodesExist()
         placeInitialLayoutIfNeeded()
+        startSimulationIfReady()
     }
 
     // MARK: - Touch input (GAMEPLAY_RULES.md §5.1)
@@ -129,6 +132,12 @@ final class GameScene: SKScene {
         }
         self.simulator = simulator
         simulator.start()
+        isSimulationRunning = true
+    }
+
+    private func startSimulationIfReady() {
+        guard didPlaceInitialLayout, !isSimulationRunning else { return }
+        startSimulation()
     }
 
     private func launchJump(_ jumpType: JumpType) {
