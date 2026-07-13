@@ -24,4 +24,10 @@ xcodebuild -scheme Falling -destination 'platform=iOS Simulator,name=iPhone 16' 
 
 ## Vertical slice (current)
 
-Edge-to-edge SpriteKit scene hosted in SwiftUI via `SpriteView`. A grey platform sits near the bottom; a white player rectangle starts on top of it and immediately falls under gravity (1,200 world units/s²) using the authoritative 1/120 s fixed-timestep loop. No input, landing collision, scoring, or abyss death yet.
+Edge-to-edge SpriteKit scene hosted in SwiftUI via `SpriteView`. Two static platforms: the player spawns grounded on the first, stays stationary while grounded, and jumps via two-zone touch input (left = Small Jump, right = Long Jump). Swept top-surface collision resolves landings; gravity and jump velocities use locked depth-0 values. No crumble timers, procedural generation, camera follow, scoring, HUD, or abyss death yet.
+
+### Controls
+
+- Tap the **left half** of the screen for a Small Jump (260 wu/s horizontal, -420 wu/s vertical).
+- Tap the **right half** (including centreline) for a Long Jump (390 wu/s horizontal, -500 wu/s vertical).
+- Input is enabled after 0.75 s spawn lockout.
