@@ -179,7 +179,7 @@ final class GameScene: SKScene {
     }
 
     private func launchJump(_ jumpType: JumpType) {
-        playerVelocity = CGVector(dx: jumpType.horizontalVelocity, dy: jumpType.verticalVelocity)
+        playerVelocity = jumpType.launchVelocity
         playerState = .jumping
         groundedPlatformID = nil
     }
