@@ -35,6 +35,7 @@ final class GameScene: SKScene {
         ensureNodesExist()
         placeInitialLayoutIfNeeded()
         startSimulationIfReady()
+        updatePresentation()
     }
 
     // MARK: - Touch input (GAMEPLAY_RULES.md §5.1)
@@ -73,8 +74,8 @@ final class GameScene: SKScene {
         playerVelocity = .zero
         playerState = .grounded
         groundedPlatformID = startPlatform.id
-        playerNode?.position = playerPosition
         didPlaceInitialLayout = true
+        updatePresentation()
     }
 
     private func makeStaticPlatforms() -> [Platform] {
@@ -110,9 +111,10 @@ final class GameScene: SKScene {
                 node = created
             }
 
-            node.position = platform.center
             node.size = platform.size
         }
+
+        updatePresentation()
     }
 
     private func spawnPosition(on platform: Platform) -> CGPoint {
@@ -120,6 +122,42 @@ final class GameScene: SKScene {
             x: platform.center.x,
             y: platform.topSurfaceY + WorldConstants.playerSize.height * 0.5
         )
+    }
+
+    // MARK: - Presentation (ARCHITECTURE.md §8.4)
+
+    override func update(_ currentTime: TimeInterval) {
+        updatePresentation()
+    }
+
+    private func updatePresentation() {
+        guard didPlaceInitialLayout, size.width > 0, size.height > 0 else { return }
+
+        if let playerNode {
+            let projectedPlayer = DepthProjection.projectPlayer(
+                worldCenter: playerPosition,
+                worldSize: WorldConstants.playerSize,
+                viewportSize: size
+            )
+            playerNode.position = projectedPlayer.position
+            playerNode.size = projectedPlayer.size
+            playerNode.zPosition = 100
+        }
+
+        for platform in platforms {
+            guard let node = platformNodes[platform.id] else { continue }
+
+            let projectedPlatform = DepthProjection.projectPlatform(
+                platform: platform,
+                playerWorldCenter: playerPosition,
+                playerWorldSize: WorldConstants.playerSize,
+                viewportSize: size
+            )
+
+            node.position = projectedPlatform.position
+            node.size = projectedPlatform.size
+            node.zPosition = -projectedPlatform.depthToPlayer
+        }
     }
 
     // MARK: - Simulation
@@ -151,7 +189,6 @@ final class GameScene: SKScene {
 
         if playerState == .grounded {
             maintainGroundedState()
-            playerNode?.position = playerPosition
             return
         }
 
@@ -179,8 +216,6 @@ final class GameScene: SKScene {
             playerState = .grounded
             groundedPlatformID = landing.platformID
         }
-
-        playerNode?.position = playerPosition
     }
 
     private func maintainGroundedState() {

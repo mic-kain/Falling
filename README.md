@@ -24,7 +24,7 @@ xcodebuild -scheme Falling -destination 'platform=iOS Simulator,name=iPhone 16' 
 
 ## Vertical slice (current)
 
-Edge-to-edge SpriteKit scene hosted in SwiftUI via `SpriteView`. Two static platforms: the player spawns grounded on the first, stays stationary while grounded, and jumps via two-zone touch input (left = Small Jump, right = Long Jump). Swept top-surface collision resolves landings; gravity and jump velocities use locked depth-0 values. No crumble timers, procedural generation, camera follow, scoring, HUD, or abyss death yet.
+Edge-to-edge SpriteKit scene hosted in SwiftUI via `SpriteView`. Physics and collision remain in world units on the fixed 1/120 s timestep. A cosmetic depth projection layer (ARCHITECTURE.md §8.4) maps world depth and lateral offset into screen scale/position only: the player feet anchor near the lower-middle of the screen, distant platforms shrink toward an upper-centre vanishing point, and nearer platforms grow toward the anchor as depth-to-player decreases.
 
 ### Controls
 
