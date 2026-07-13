@@ -60,3 +60,6 @@ The renderer maps a platform's lateral world offset into a horizontal screen off
 A looping cavern-wall texture renders around the center vanishing point and scrolls outward and downward with depth to reinforce an endless-shaft feeling of falling into the screen.
 
 This projection is cosmetic only. Gameplay, collision and difficulty scaling continue to operate entirely in world units and never read screen-space values.
+
+
+Multiple ledges from the active world window render simultaneously, not one at a time. Ledges are scattered at varied lateral offsets across the shaft, some left of center, some right of center, some near center, and at varied depths, matching the scattered multi-ledge reference layout for Tier 1. Each visible ledge independently follows the same center-vanishing-point projection described above: it spawns small near center at its own depth and grows while moving toward the bottom anchor as depth-to-player decreases, regardless of what any other visible ledge is doing.
