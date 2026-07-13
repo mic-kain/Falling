@@ -12,8 +12,9 @@ Native iPhone arcade game. See `ARCHITECTURE.md` and `GAMEPLAY_RULES.md` for the
 
 1. Open `Falling.xcodeproj` in Xcode.
 2. Select an iPhone simulator (for example iPhone 16).
-3. If Xcode prompts for signing, choose your Personal Team (simulator builds only need this once).
-4. Press Run (⌘R).
+3. Press Run (⌘R).
+
+Simulator builds do not require a development team. Device builds still use normal Xcode signing.
 
 From Terminal on macOS:
 
