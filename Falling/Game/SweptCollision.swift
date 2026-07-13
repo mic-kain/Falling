@@ -3,7 +3,7 @@ import Foundation
 
 /// Swept top-surface landing collision (ARCHITECTURE.md §8).
 enum SweptCollision {
-    struct LandingResult {
+    struct LandingResult: Equatable {
         let platformID: UUID
         let position: CGPoint
     }
