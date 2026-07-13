@@ -1,4 +1,5 @@
 import CoreGraphics
+import Foundation
 
 /// Touch-zone jump selection (GAMEPLAY_RULES.md §5.1, §5.3).
 enum JumpType: Equatable {
