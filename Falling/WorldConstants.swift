@@ -33,7 +33,24 @@ enum WorldConstants {
     static let platformBottomOffset: CGFloat = 80
     static let playerSize = CGSize(width: 28, height: 40)
 
-    /// Second test platform: reachable by Small Jump to the right with a modest drop.
-    static let secondPlatformCenter = CGPoint(x: 310, y: 56)
-    static let secondPlatformSize = CGSize(width: 120, height: 24)
+    /// Nearest / spawn ledge width — spans most of the screen at scale 1 (look-down).
+    static let startPlatformSize = CGSize(width: 340, height: 28)
+
+    /// Depth-field demo ledges (ARCHITECTURE.md §8.4 multi-ledge paragraph).
+    /// `lateral` is world X offset from shaft centre; `depth` is world Y below the start ledge centre.
+    /// Depths are spaced across `PresentationConstants.fullVanishingDepth` so some ledges sit
+    /// near the feet, some mid-shaft, and some small at the centre vanishing point.
+    static let depthFieldLedges: [(lateral: CGFloat, depth: CGFloat, size: CGSize)] = [
+        (-110, 70, CGSize(width: 150, height: 26)),
+        (105, 140, CGSize(width: 130, height: 26)),
+        (-40, 220, CGSize(width: 170, height: 26)),
+        (125, 300, CGSize(width: 120, height: 26)),
+        (-130, 380, CGSize(width: 140, height: 26)),
+        (60, 460, CGSize(width: 160, height: 26)),
+        (-90, 540, CGSize(width: 110, height: 26)),
+        (100, 620, CGSize(width: 145, height: 26)),
+        (15, 700, CGSize(width: 155, height: 26)),
+        (-115, 800, CGSize(width: 125, height: 26)),
+        (85, 900, CGSize(width: 135, height: 26)),
+    ]
 }
