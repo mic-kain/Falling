@@ -1,11 +1,13 @@
 import SpriteKit
 
 /// Gameplay scene: static platforms, swept landing, grounded behaviour, two-zone jumps.
+/// Presentation uses a look-down depth projection (ARCHITECTURE.md §8.4).
 final class GameScene: SKScene {
     private var simulator: FixedTimestepSimulator?
     private var isSimulationRunning = false
     private var playerNode: SKSpriteNode?
     private var platformNodes: [UUID: SKSpriteNode] = [:]
+    private var shaftGuideNode: SKNode?
 
     private var platforms: [Platform] = []
     private var playerPosition = CGPoint.zero
@@ -16,7 +18,7 @@ final class GameScene: SKScene {
     private var didPlaceInitialLayout = false
 
     override func didMove(to view: SKView) {
-        backgroundColor = SKColor(red: 0.12, green: 0.14, blue: 0.18, alpha: 1)
+        backgroundColor = SKColor(red: 0.07, green: 0.09, blue: 0.12, alpha: 1)
         anchorPoint = .zero
         isUserInteractionEnabled = true
 
@@ -33,6 +35,7 @@ final class GameScene: SKScene {
 
     override func didChangeSize(_ oldSize: CGSize) {
         ensureNodesExist()
+        rebuildShaftGuides()
         placeInitialLayoutIfNeeded()
         startSimulationIfReady()
         updatePresentation()
@@ -53,13 +56,78 @@ final class GameScene: SKScene {
     // MARK: - World setup
 
     private func ensureNodesExist() {
+        if shaftGuideNode == nil {
+            rebuildShaftGuides()
+        }
+
         guard playerNode == nil else { return }
 
-        let player = SKSpriteNode(color: SKColor(white: 0.95, alpha: 1), size: WorldConstants.playerSize)
-        player.anchorPoint = CGPoint(x: 0.5, y: 0.5)
-        player.zPosition = 10
-        addChild(player)
-        playerNode = player
+        // Feet / lower-body footprint — sells look-down, not a side-view body.
+        let feet = SKSpriteNode(
+            color: SKColor(white: 0.95, alpha: 1),
+            size: PresentationConstants.playerFeetPresentationSize
+        )
+        feet.anchorPoint = CGPoint(x: 0.5, y: 0.5)
+        feet.zPosition = 100
+        addChild(feet)
+        playerNode = feet
+    }
+
+    private func rebuildShaftGuides() {
+        shaftGuideNode?.removeFromParent()
+        guard size.width > 0, size.height > 0 else { return }
+
+        let root = SKNode()
+        root.zPosition = -1_000
+
+        let vanishingPoint = PresentationConstants.vanishingPoint(in: size)
+        let playerAnchor = PresentationConstants.playerAnchor(in: size)
+
+        // Converging shaft edges: look-down cavern cues from centre VP toward the feet.
+        let edgeColor = SKColor(white: 0.22, alpha: 1)
+        let leftEdge = shaftLine(
+            from: vanishingPoint,
+            to: CGPoint(x: size.width * 0.02, y: playerAnchor.y * 0.35),
+            color: edgeColor
+        )
+        let rightEdge = shaftLine(
+            from: vanishingPoint,
+            to: CGPoint(x: size.width * 0.98, y: playerAnchor.y * 0.35),
+            color: edgeColor
+        )
+        root.addChild(leftEdge)
+        root.addChild(rightEdge)
+
+        // Depth rings around the vanishing point reinforce "falling into the screen".
+        for ringScale: CGFloat in [0.06, 0.12, 0.2, 0.32] {
+            let ring = SKShapeNode(circleOfRadius: min(size.width, size.height) * ringScale)
+            ring.position = vanishingPoint
+            ring.strokeColor = SKColor(white: 0.18, alpha: 1)
+            ring.fillColor = .clear
+            ring.lineWidth = 1
+            ring.glowWidth = 0
+            root.addChild(ring)
+        }
+
+        let vanishingMarker = SKShapeNode(circleOfRadius: 4)
+        vanishingMarker.position = vanishingPoint
+        vanishingMarker.fillColor = SKColor(white: 0.35, alpha: 1)
+        vanishingMarker.strokeColor = .clear
+        root.addChild(vanishingMarker)
+
+        addChild(root)
+        shaftGuideNode = root
+    }
+
+    private func shaftLine(from: CGPoint, to: CGPoint, color: SKColor) -> SKShapeNode {
+        let path = CGMutablePath()
+        path.move(to: from)
+        path.addLine(to: to)
+        let node = SKShapeNode(path: path)
+        node.strokeColor = color
+        node.lineWidth = 1.5
+        node.glowWidth = 0
+        return node
     }
 
     private func placeInitialLayoutIfNeeded() {
@@ -70,15 +138,12 @@ final class GameScene: SKScene {
 
         guard let startPlatform = platforms.first else { return }
 
-        // Fall into the shaft so each ledge's depth-to-player animates independently
-        // while the feet stay locked to the bottom screen anchor (ARCHITECTURE.md §8.4).
-        playerPosition = CGPoint(
-            x: startPlatform.center.x,
-            y: startPlatform.topSurfaceY + WorldConstants.playerSize.height * 0.5 + 420
-        )
+        // Stand on the nearest ledge so it reads large at the bottom feet anchor
+        // while deeper ledges remain small toward the centre vanishing point.
+        playerPosition = spawnPosition(on: startPlatform)
         playerVelocity = .zero
-        playerState = .falling
-        groundedPlatformID = nil
+        playerState = .grounded
+        groundedPlatformID = startPlatform.id
         didPlaceInitialLayout = true
         updatePresentation()
     }
@@ -120,7 +185,7 @@ final class GameScene: SKScene {
                 node = existing
             } else {
                 // Placeholder shades so overlapping ledges stay readable in the depth field.
-                let shade = 0.42 + CGFloat(index % 5) * 0.06
+                let shade = 0.38 + CGFloat(index % 5) * 0.07
                 let created = SKSpriteNode(color: SKColor(white: shade, alpha: 1), size: platform.size)
                 created.anchorPoint = CGPoint(x: 0.5, y: 0.5)
                 created.zPosition = 0
@@ -152,11 +217,7 @@ final class GameScene: SKScene {
         guard didPlaceInitialLayout, size.width > 0, size.height > 0 else { return }
 
         if let playerNode {
-            let projectedPlayer = DepthProjection.projectPlayer(
-                worldCenter: playerPosition,
-                worldSize: WorldConstants.playerSize,
-                viewportSize: size
-            )
+            let projectedPlayer = DepthProjection.projectPlayer(viewportSize: size)
             playerNode.position = projectedPlayer.position
             playerNode.size = projectedPlayer.size
             playerNode.zPosition = 100
@@ -174,7 +235,9 @@ final class GameScene: SKScene {
 
             node.position = projectedPlatform.position
             node.size = projectedPlatform.size
-            node.zPosition = -projectedPlatform.depthToPlayer
+            // Nearer ledges draw above farther ones.
+            node.zPosition = 50 - projectedPlatform.projectionT * 40
+            node.alpha = projectedPlatform.projectionT >= 0.98 ? 0.85 : 1
         }
     }
 
