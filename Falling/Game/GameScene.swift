@@ -8,6 +8,7 @@ final class GameScene: SKScene {
     private var playerNode: SKSpriteNode?
     private var platformNodes: [UUID: SKSpriteNode] = [:]
     private var shaftGuideNode: SKNode?
+    private var buildStampNode: SKLabelNode?
 
     private var platforms: [Platform] = []
     private var playerPosition = CGPoint.zero
@@ -36,6 +37,7 @@ final class GameScene: SKScene {
     override func didChangeSize(_ oldSize: CGSize) {
         ensureNodesExist()
         rebuildShaftGuides()
+        layoutBuildStamp()
         placeInitialLayoutIfNeeded()
         startSimulationIfReady()
         updatePresentation()
@@ -59,18 +61,39 @@ final class GameScene: SKScene {
         if shaftGuideNode == nil {
             rebuildShaftGuides()
         }
+        ensureBuildStamp()
 
         guard playerNode == nil else { return }
 
         // Feet / lower-body footprint — sells look-down, not a side-view body.
         let feet = SKSpriteNode(
-            color: SKColor(white: 0.95, alpha: 1),
+            color: SKColor(red: 1, green: 0.45, blue: 0.1, alpha: 1),
             size: PresentationConstants.playerFeetPresentationSize
         )
         feet.anchorPoint = CGPoint(x: 0.5, y: 0.5)
         feet.zPosition = 100
         addChild(feet)
         playerNode = feet
+    }
+
+    /// Bright on-screen stamp so a stale Desktop binary is obvious.
+    private func ensureBuildStamp() {
+        guard buildStampNode == nil else { return }
+        let label = SKLabelNode(fontNamed: "Menlo-Bold")
+        label.text = "LOOK-DOWN BUILD 6ec24a3+"
+        label.fontSize = 14
+        label.fontColor = SKColor(red: 0.2, green: 1, blue: 0.4, alpha: 1)
+        label.horizontalAlignmentMode = .left
+        label.verticalAlignmentMode = .top
+        label.zPosition = 1_000
+        addChild(label)
+        buildStampNode = label
+        layoutBuildStamp()
+    }
+
+    private func layoutBuildStamp() {
+        guard size.width > 0, size.height > 0 else { return }
+        buildStampNode?.position = CGPoint(x: 12, y: size.height - 12)
     }
 
     private func rebuildShaftGuides() {
@@ -109,10 +132,11 @@ final class GameScene: SKScene {
             root.addChild(ring)
         }
 
-        let vanishingMarker = SKShapeNode(circleOfRadius: 4)
+        let vanishingMarker = SKShapeNode(circleOfRadius: 10)
         vanishingMarker.position = vanishingPoint
-        vanishingMarker.fillColor = SKColor(white: 0.35, alpha: 1)
-        vanishingMarker.strokeColor = .clear
+        vanishingMarker.fillColor = SKColor(red: 0.15, green: 1, blue: 0.35, alpha: 1)
+        vanishingMarker.strokeColor = SKColor(white: 1, alpha: 0.9)
+        vanishingMarker.lineWidth = 2
         root.addChild(vanishingMarker)
 
         addChild(root)
