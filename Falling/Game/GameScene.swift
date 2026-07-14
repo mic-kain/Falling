@@ -80,7 +80,7 @@ final class GameScene: SKScene {
     private func ensureBuildStamp() {
         guard buildStampNode == nil else { return }
         let label = SKLabelNode(fontNamed: "Menlo-Bold")
-        label.text = "LOOK-DOWN BUILD 6ec24a3+"
+        label.text = "LOOK-DOWN+SIGNING cf3704a"
         label.fontSize = 14
         label.fontColor = SKColor(red: 0.2, green: 1, blue: 0.4, alpha: 1)
         label.horizontalAlignmentMode = .left
