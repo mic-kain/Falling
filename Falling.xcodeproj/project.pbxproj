@@ -225,7 +225,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Falling/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Falling;
+				INFOPLIST_KEY_CFBundleDisplayName = "Falling LD";
 				INFOPLIST_KEY_LSRequiresIPhoneOS = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -263,7 +263,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Falling/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Falling;
+				INFOPLIST_KEY_CFBundleDisplayName = "Falling LD";
 				INFOPLIST_KEY_LSRequiresIPhoneOS = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
